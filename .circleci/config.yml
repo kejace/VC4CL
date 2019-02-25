@@ -37,10 +37,21 @@ jobs:
           command: cd build && cpack -G DEB
       - store_artifacts:
           path: build/src/libVC4CL.so.0.4
-          distination: libVC4CL.so.0.4
+          distination: artifacts/libVC4CL.so.0.4
       - store_artifacts:
           path: build/test/TestVC4CL
-          distination: TestVC4CL
+          distination: artifacts/TestVC4CL
       - store_artifacts:
           path: build/vc4cl-0.4-Linux.deb
-          distination: vc4cl-0.4-Linux.deb
+          distination: artifacts/vc4cl-0.4-Linux.deb
+  publish-github-release:
+    docker:
+      - image: cibuilds/github:0.10
+    steps:
+      - attach_workspace:
+          at: ./artifacts
+      - run:
+          name: "Publish Release on GitHub"
+          command: |
+            VERSION=$(my-binary --version)
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./artifacts/
