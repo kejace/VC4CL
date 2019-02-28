@@ -44,15 +44,12 @@ jobs:
       - store_artifacts:
           path: build/vc4cl-0.4-Linux.deb
           distination: artifacts/vc4cl-0.4-Linux.deb
-  publish-github-release:
-    docker:
-      - image: cibuilds/github:0.10
+  release:
+    docker: 
+      - image: nomaddo/native
     steps:
       - build
-      - attach_workspace:
-          at: ./artifacts
-      - run:
-          name: "Publish Release on GitHub"
-          command: |
-            VERSION=$(my-binary --version)
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./artifacts/
+      - run: go get github.com/aktau/github-release
+      - run: github-release upload --user $CIRCLE_PROJECT_USERNAME --repo $CIRCLE_PROJECT_REPONAME --tag $CIRCLE_TAG --name $CIRCLE_PROJECT_REPONAME"."$CIRCLE_TAG"-build-"$CIRCLE_BUILD_NUM".zip" --file $CIRCLE_ARTIFACTS/$PROJECT_NAME-$CIRCLE_TAG.zip
+
+
